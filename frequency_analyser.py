@@ -3,23 +3,32 @@
 import click
 import operator
 import json
+import codecs
+
+
+CHARS = 'abcdefghijklmnopqrstuvwxyzäöü'
 
 
 @click.command()
-@click.argument('input', type=click.File('r'))
+@click.argument('input') 
 @click.option('--sort-count/--sort-key', default=True)
-@click.option('--alpha-only', is_flag=True, default=False)
 @click.option('--buffer', type=int, default=0)
 @click.option('--output', '-o')
-def cli(input, sort_count, alpha_only, buffer, output):
+def cli(input, sort_count, buffer, output):
+    input_file = codecs.open(input, 'r', 'utf-8')
     charbuffer = []
     charmap = {}
     strmap = {}
     while True:
-        char = input.read(1)
+        try:
+            char = input_file.read(1)
+        except UnicodeDecodeError as err:
+            charbuffer = []
+            continue
         if not char:
             break
-        if alpha_only and not char.isalpha():
+        if char not in CHARS:
+            charbuffer = []
             continue
         char = char.lower()
         if char in charmap:
@@ -49,12 +58,12 @@ def cli(input, sort_count, alpha_only, buffer, output):
 
 
 def output_to_file(charmap, strmap, output):
-    with open(output, 'w') as file:
+    with open(output, 'w', encoding='utf-8') as file:
         obj = {
             'single': charmap,
             'combinations': strmap,
         }
-        json.dump(obj, file, indent=4)
+        json.dump(obj, file, indent=4, ensure_ascii=False)
 
 
 def print_to_console(charmap, strmap, sort_count):
