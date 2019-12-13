@@ -4,6 +4,7 @@ import click
 import operator
 import json
 import codecs
+import csv
 
 
 CHARS = 'abcdefghijklmnopqrstuvwxyzäöü'
@@ -14,7 +15,8 @@ CHARS = 'abcdefghijklmnopqrstuvwxyzäöü'
 @click.option('--sort-count/--sort-key', default=True)
 @click.option('--buffer', type=int, default=0)
 @click.option('--output', '-o')
-def cli(input, sort_count, buffer, output):
+@click.option('--csv/--json', default=False)
+def cli(input, sort_count, buffer, output, csv):
     input_file = codecs.open(input, 'r', 'utf-8')
     charbuffer = []
     charmap = {}
@@ -52,9 +54,21 @@ def cli(input, sort_count, buffer, output):
                         strmap[string] = 1
 
     if output:
-        output_to_file(charmap, strmap, output)
+        if csv:
+            output_to_csv(charmap, strmap, output)
+        else:
+            output_to_file(charmap, strmap, output)
     else:
         print_to_console(charmap, strmap, sort_count)
+
+
+def output_to_csv(charmap, strmap, output):
+    with open(output, 'w', encoding='utf-8', newline='') as file:
+        writer = csv.writer(file)
+        for char, freq in charmap.items():
+            writer.writerow([char, freq])
+        for char, freq in strmap.items():
+            writer.writerow([char, freq])
 
 
 def output_to_file(charmap, strmap, output):
