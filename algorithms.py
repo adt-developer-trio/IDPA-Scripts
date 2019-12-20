@@ -52,7 +52,10 @@ def finger_distance(layout, frequency):
 
     # Absolute distance
     absolute = sum(sorted(frequency.values())[:-8])
-    return (distance, distance / absolute)
+    return (
+        [distance, distance / get_char_count(frequency)],
+        distance / absolute
+    )
 
 
 def finger_distribution(layout, frequency):
