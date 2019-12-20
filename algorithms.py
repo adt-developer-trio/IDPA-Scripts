@@ -44,7 +44,7 @@ def finger_distance(layout, frequency):
 
     # Absolute distance
     absolute = sum(sorted(frequency.values())[:-8])
-    return (distance, 1 / ((distance - absolute) / absolute))
+    return (distance, distance / absolute)
 
 
 def finger_distribution(layout, frequency):
@@ -114,11 +114,8 @@ def row_distribution(layout, frequency):
                      sum(vals_sorted[:10]) / count,
                      sum(vals_sorted[21:]) / count]
 
-    absolute_val = \
-        sum([abs(relative_vals[i] - absolute_vals[i]) for i in range(3)])
-
     vals_zipped = zip(absolute_vals, relative_vals)
-    absolute_val = sum([abs(a - r) for (a, r) in vals_zipped])
+    absolute_val = sum([abs(a - r) / a for (a, r) in vals_zipped])
     return (relative_vals, absolute_val)
 
 
