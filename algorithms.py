@@ -33,6 +33,14 @@ def finger_keys(layout):
     ]
 
 
+def get_column(layout, i):
+    return [
+        layout[1][i + 1][0],
+        layout[2][i + 1][0],
+        layout[3][i + 2][0],
+    ]
+
+
 def finger_distance(layout, frequency):
     central_keys = get_central_keys(layout)
 
@@ -119,19 +127,66 @@ def row_distribution(layout, frequency):
     return (relative_vals, absolute_val)
 
 
+def combination_occurrences(layout, frequency):
+
+    # 1) Sum up combinations with same keys
+    summed = {}
+    for combination in frequency.keys():
+        key = combination
+        if summed.get(combination[::-1]):
+            key = combination[::-1]
+        summed.update({
+            key: frequency.get(key) + frequency.get(combination, 0)})
+
+    positive = 0
+    negative = 0
+    # 2) Calculate +1 combinations
+    columns = [
+        [get_column(layout, i) for i in range(4)],
+        [get_column(layout, i) for i in range(6, 10)]
+    ]
+
+    for hand in columns:
+        prev_column = hand.pop(0)
+        for column in hand:
+            for i in range(len(prev_column)):
+                pair = prev_column[i] + column[i]
+                sum_pair = summed.get(pair, False) \
+                    or summed.get(pair[::-1], False) \
+                    or 0
+                if sum_pair:
+                    positive += sum_pair
+            prev_column = column
+
+    # 3) Calculate -1 combinations
+    fingers = finger_keys(layout)
+    for pair in summed.keys():
+        for finger in fingers:
+            if all([char in finger for char in pair]):
+                negative += summed.get(pair)
+
+    # 4) Differences
+    relative = [positive, negative]
+    absolute = positive / negative
+    return (relative, absolute)
+
+
 def main():
 
     with open('./layouts/qwertz.json', 'r', encoding='utf-8') as file:
         layout = json.load(file)
 
     with open('./output/de/de.json', 'r', encoding='utf-8') as file:
-        frequency = json.load(file).get('single')
+        data = json.load(file)
+        frequency = data.get('single')
+        combinations = data.get('combinations')
 
-    print(get_central_keys(layout))
-    print(finger_keys(layout))
-    print(finger_distance(layout, frequency))
-    print(finger_distribution(layout, frequency))
-    print(row_distribution(layout, frequency))
+    # print(get_central_keys(layout))
+    # print(finger_keys(layout))
+    print(f'Finger Distance : \t\t{str(finger_distance(layout, frequency))}')
+    print(f'Finger Distribution : \t\t{str(finger_distribution(layout, frequency))}')
+    print(f'Row Distribution : \t\t{str(row_distribution(layout, frequency))}')
+    print(f'Combination Occurences : \t{str(combination_occurrences(layout, combinations))}')
 
 
 if __name__ == "__main__":
