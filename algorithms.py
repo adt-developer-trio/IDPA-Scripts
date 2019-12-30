@@ -6,6 +6,10 @@ def get_central_keys(layout):
     return [key[0] for key in central]
 
 
+def normalize(val, min_val, max_val):
+    return (val - min_val) / (max_val - min_val)
+
+
 def finger_keys(layout):
     return [
         [
@@ -51,10 +55,12 @@ def finger_distance(layout, frequency):
             distance += val
 
     # Absolute distance
-    absolute = sum(sorted(frequency.values())[:-8])
+    sorted_frequencies = sorted(frequency.values())
+    minimum = sum(sorted_frequencies[:-8])
+    maximum = sum(sorted_frequencies[8:])
     return (
         [distance, distance / get_char_count(frequency)],
-        distance / absolute
+        1 - normalize(distance, minimum, maximum)
     )
 
 
@@ -71,8 +77,25 @@ def finger_distribution(layout, frequency):
         res.append(key_sum)
 
     relative_vals = [val / all_sum for val in res]
-    absolute_val = sum([abs(val - 0.125) for val in relative_vals])
-    return (relative_vals, absolute_val)
+    val = sum([abs(val - 0.125) for val in relative_vals])
+
+    # Calc best case
+    minimum = 0
+
+    # Calc worst case
+    lengths = sorted([len(d) for d in distributions])[::-1]
+    sorted_frequencies = sorted(frequency.values())[::-1]
+    t = 0
+    maximum = 0
+    for length in lengths:
+        next_point = t + length
+        if next_point > len(sorted_frequencies):
+            next_point = len(sorted_frequencies)
+
+        maximum += abs(sum(sorted_frequencies[t:next_point]) / all_sum - 0.125)
+        t += length
+
+    return (relative_vals, 1 - normalize(val, minimum, maximum))
 
 
 def hand_distribution(layout, frequency):
@@ -120,14 +143,26 @@ def row_distribution(layout, frequency):
     relative_vals = \
         [r / count for r in [toprow_vals, homerow_vals, bottomrow_vals]]
 
-    vals_sorted = sorted(frequency.values())
-    absolute_vals = [sum(vals_sorted[10:21]) / count,
-                     sum(vals_sorted[:10]) / count,
-                     sum(vals_sorted[21:]) / count]
+    vals_sorted = sorted(frequency.values())[::-1]
+    reversed_sorted = vals_sorted[::-1]
+    best_case = [sum(vals_sorted[10:21]) / count,
+                 sum(vals_sorted[:10]) / count,
+                 sum(vals_sorted[21:]) / count]
+    worst_case = [sum(reversed_sorted[10:21]) / count,
+                  sum(reversed_sorted[:10]) / count,
+                  sum(reversed_sorted[21:]) / count]
 
-    vals_zipped = zip(absolute_vals, relative_vals)
-    absolute_val = sum([abs(a - r) / a for (a, r) in vals_zipped])
-    return (relative_vals, absolute_val)
+    normalized = []
+    for i in range(3):
+        rel = relative_vals[i]
+        worst = worst_case[i]
+        best = best_case[i]
+
+        val = normalize(rel, worst, best)
+        normalized.append(val)
+
+    normalized = sum(normalized[1:]) / 2
+    return (relative_vals, normalized)
 
 
 def combination_occurrences(layout, frequency):
@@ -170,8 +205,9 @@ def combination_occurrences(layout, frequency):
 
     # 4) Differences
     relative = [positive, negative]
-    absolute = positive / negative
-    return (relative, absolute)
+    to_compare = sum(summed.values())
+    absolute_negative = normalize(-negative, -to_compare, 0)
+    return (relative, absolute_negative)
 
 
 def main():
@@ -179,7 +215,7 @@ def main():
     with open('./layouts/qwertz.json', 'r', encoding='utf-8') as file:
         layout = json.load(file)
 
-    with open('./output/de/de.json', 'r', encoding='utf-8') as file:
+    with open('./output/en/en.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
         frequency = data.get('single')
         combinations = data.get('combinations')
