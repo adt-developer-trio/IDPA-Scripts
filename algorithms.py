@@ -11,37 +11,39 @@ def normalize(val, min_val, max_val):
 
 
 def finger_keys(layout):
+    layout = get_first_layer(layout)
     return [
         [
-            layout[1][1][0], layout[2][1][0], layout[3][1][0],
-            layout[3][2][0]
+            layout[1][1], layout[2][1], layout[3][1],
+            layout[3][2]
         ], [
-            layout[1][2][0], layout[2][2][0], layout[3][3][0]
+            layout[1][2], layout[2][2], layout[3][3]
         ], [
-            layout[1][3][0], layout[2][3][0], layout[3][4][0]
+            layout[1][3], layout[2][3], layout[3][4]
         ], [
-            layout[1][4][0], layout[2][4][0], layout[3][5][0],
-            layout[1][5][0], layout[2][5][0], layout[3][6][0]
+            layout[1][4], layout[2][4], layout[3][5],
+            layout[1][5], layout[2][5], layout[3][6]
         ], [
-            layout[1][6][0], layout[2][6][0], layout[3][7][0],
-            layout[1][7][0], layout[2][7][0], layout[3][8][0]
+            layout[1][6], layout[2][6], layout[3][7],
+            layout[1][7], layout[2][7], layout[3][8]
         ], [
-            layout[1][8][0], layout[2][8][0], layout[3][9][0]
+            layout[1][8], layout[2][8], layout[3][9]
         ], [
-            layout[1][9][0], layout[2][9][0], layout[3][10][0]
+            layout[1][9], layout[2][9], layout[3][10]
         ], [
-            layout[1][10][0], layout[2][10][0], layout[3][11][0],
-            layout[1][11][0], layout[2][11][0],
-            layout[1][12][0], layout[2][12][0]
+            layout[1][10], layout[2][10], layout[3][11],
+            layout[1][11], layout[2][11],
+            layout[1][12], layout[2][12]
         ]
     ]
 
 
 def get_column(layout, i):
+    layout = get_first_layer(layout)
     return [
-        layout[1][i + 1][0],
-        layout[2][i + 1][0],
-        layout[3][i + 2][0],
+        layout[1][i + 1],
+        layout[2][i + 1],
+        layout[3][i + 2],
     ]
 
 
@@ -115,6 +117,7 @@ def get_first_layer(layout):
             else:
                 line_vals.append(str(key))
         temp.append(line_vals)
+    return temp
 
 
 def get_char_count(frequency):
