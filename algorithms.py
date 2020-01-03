@@ -70,13 +70,14 @@ def finger_distribution(layout, frequency):
     distributions = finger_keys(layout)
     res = []
 
-    all_sum = get_char_count(frequency)
+    all_sum = 0
     for distribution in distributions:
         key_sum = 0
         for key in distribution:
             key_frequency = frequency.get(key, 0)
             key_sum += key_frequency
         res.append(key_sum)
+        all_sum += key_sum
 
     relative_vals = [val / all_sum for val in res]
     val = sum([abs(val - 0.125) for val in relative_vals])
@@ -142,6 +143,8 @@ def row_distribution(layout, frequency):
             toprow_vals += val
         elif key in bottomrow:
             bottomrow_vals += val
+        else:
+            count -= val
 
     relative_vals = \
         [r / count for r in [toprow_vals, homerow_vals, bottomrow_vals]]
