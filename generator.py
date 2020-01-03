@@ -1,20 +1,32 @@
 import random
 import json
 import itertools
+import copy
+from algorithms import *
 
 chars = list('abcdefghijklmnopqrstuvwxyzäöü')
-ITERATIONS = 100
-POPULATION_SIZE = 100
-SELECTED_COUNT = 33
-MUTATION_COUNT = 33
+ITERATIONS = 400
+POPULATION_SIZE = 200
+SELECTED_COUNT = 50
+MUTATION_COUNT = 500
 MUTATION_RATE = 0.1
+
+LAYOUT_TEMPLATE = [
+  ["§", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ["'"], ["^"], "back"],
+  ["tab", None, None, None, None, None, None, None, None, None, None, [None], ["¨"], "enter"],
+  ["caps", None, None, None, None, None, None, None, None, None, [None], [None], ["$"]],
+  ["Shift", ["<", ">", "\\"], None, None, None, None, None, None, None, [",", ";"], [".", ":"], ["-", "_"], "Shift"],
+  ["Ctrl", "Meta", "Alt", " ", "Alt Gr", "", "Ctrl"]
+]
 
 
 def main():
     population = generate_population(POPULATION_SIZE)
 
-    with open('data.json') as file:
-        frequency = json.load(file)['single']
+    with open('output/de/de.json') as file:
+        data = json.load(file)
+        frequency = data.get('single')
+        combinations = data.get('combinations')
 
     for i in range(1, ITERATIONS + 1):
         fitnesses = evaluate_population(population, frequency)
@@ -27,19 +39,50 @@ def main():
     else:
         best = population[fitnesses.index(max(fitnesses))]
         print_layout(best)
+        print(f'Finger distance: {finger_distance(best, frequency)[1]}')
+        print(f'Finger distribution: {finger_distribution(best, frequency)[1]}')
+        print(f'Row dist: {row_distribution(best, frequency)[1]}')
+        print(f'Combinations: {combination_occurrences(best, combinations)[1]}')
 
 
 def print_layout(genotype):
-    print(genotype[:11])
-    print(genotype[11:22])
-    print(genotype[22:29])
+    for row in genotype:
+        print(row)
 
 
-def mutate_char(char, genotype, rate):
+def mutate_char(char, char_list, rate):
+    new_char_list = char_list[:]
     if random.random() < rate/100:
-        index1 = genotype.index(char)
-        index2 = random.randint(0, len(genotype) - 1)
-        genotype[index1], genotype[index2] = genotype[index2], genotype[index1]
+        index1 = new_char_list.index(char)
+        index2 = random.randint(0, len(new_char_list) - 1)
+        new_char_list[index1], new_char_list[index2] = new_char_list[index2], new_char_list[index1]
+    return new_char_list
+
+
+def extract_chars(layout):
+    char_list = []
+    for r, row in enumerate(layout):
+        for i, key in enumerate(row):
+            if LAYOUT_TEMPLATE[r][i] is None:
+                char_list.append(layout[r][i])
+            elif isinstance(LAYOUT_TEMPLATE[r][i], list):
+                for l, layer in enumerate(key):
+                    if LAYOUT_TEMPLATE[r][i][l] is None:
+                        char_list.append(layout[r][i][l])
+    return char_list
+
+
+def layout_from_chars(char_list):
+    layout = copy.deepcopy(LAYOUT_TEMPLATE)
+    for r, row in enumerate(layout):
+        for i, key in enumerate(row):
+            if key is None:
+                layout[r][i] = char_list.pop(0)
+            if isinstance(key, list):
+                for l, layer in enumerate(key):
+                    if layout[r][i][l] is None:
+                        layout[r][i][l] = char_list.pop(0)
+    return layout
 
 
 def mutate(selected, rate, n):
@@ -47,53 +90,25 @@ def mutate(selected, rate, n):
     source = itertools.cycle(selected)
     for i in range(n):
         genotype = next(source)[:]
-        for i in range(len(genotype)):
+        char_list = extract_chars(genotype)
+        for i in range(len(char_list)):
             if random.random() < rate:
-                index = random.randint(0, len(genotype) - 1)
-                genotype[i], genotype[index] = genotype[index], genotype[i]
-        mutated.append(genotype)
+                index = random.randint(0, len(char_list) - 1)
+                char_list[i], char_list[index] = char_list[index], char_list[i]
+        mutated.append(layout_from_chars(char_list))
     return mutated
 
 
 def evaluate_population(population, frequency):
     fitnesses = []
     for genotype in population:
-        fitness = eval_home_row(genotype, frequency)
-        fitness += eval_distance(genotype, frequency)
-        fitness += eval_fingers(genotype, frequency)
+        fitness = finger_distance(genotype, frequency)[1]
+        fitness += finger_distribution(genotype, frequency)[1]
+        fitness += row_distribution(genotype, frequency)[1]
+        fitness += combination_occurrences(genotype, frequency)[1]
         fitnesses.append(fitness)
     return fitnesses
 
-
-def eval_distance(genotype, frequency):
-    score = 0
-    for index, char in enumerate(genotype):
-        if 11 <= index <= 14 or 17 <= index <= 21:
-            score += frequency.get(char, 0)
-    return score
-
-
-def eval_fingers(genotype, frequency):
-    fingers = []
-    fingers_iter = itertools.zip_longest(genotype[:11], genotype[11:22], genotype[22:], fillvalue=None)
-    for finger in fingers_iter:
-        score = 0
-        for char in finger:
-            score += frequency.get(char, 0)
-        fingers.append(score)
-    # Merge both left index columns
-    finger = fingers.pop(4)
-    fingers[3] += finger
-    # Merge both right index columns
-    finger = fingers.pop(7)
-    fingers[6] += finger
-    total = sum(fingers)
-    expected = total / 8
-    score = 0
-    for finger in fingers:
-        if abs(finger - expected) / expected < 0.02:
-            score += 1
-    return score
 
 def select_genotypes(population, fitnesses, n):
     zipped = zip(population, fitnesses)
@@ -102,7 +117,9 @@ def select_genotypes(population, fitnesses, n):
 
 
 def generate_genotype():
-    return random.sample(chars, len(chars))
+    random_chars = random.sample(chars, len(chars))[:]
+    layout = layout_from_chars(random_chars)
+    return layout
 
 
 def generate_population(size):
@@ -110,14 +127,6 @@ def generate_population(size):
     for i in range(size):
         population.append(generate_genotype())
     return population
-
-
-def eval_home_row(genotype, frequency):
-    home_row = genotype[11:22]
-    score = 0
-    for char in home_row:
-        score += frequency.get(char, 0)
-    return score
 
 
 if __name__ == "__main__":
