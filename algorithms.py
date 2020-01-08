@@ -226,12 +226,17 @@ def main():
         frequency = data.get('single')
         combinations = data.get('combinations')
 
-    # print(get_central_keys(layout))
-    # print(finger_keys(layout))
-    print(f'Finger Distance : \t\t{str(finger_distance(layout, frequency))}')
-    print(f'Finger Distribution : \t\t{str(finger_distribution(layout, frequency))}')
-    print(f'Row Distribution : \t\t{str(row_distribution(layout, frequency))}')
-    print(f'Combination Occurences : \t{str(combination_occurrences(layout, combinations))}')
+    distance = finger_distance(layout, frequency)
+    finger_distr = finger_distribution(layout, frequency)
+    row_distr = row_distribution(layout, frequency)
+    combination = combination_occurrences(layout, combinations)
+    fitness = distance[1] + finger_distr[1] + row_distr[1] + combination[1]
+
+    print(f'Finger Distance : \t\t{str(distance)}')
+    print(f'Finger Distribution : \t\t{str(finger_distr)}')
+    print(f'Row Distribution : \t\t{str(row_distr)}')
+    print(f'Combination Occurences : \t{str(combination)}')
+    print(f'Total score: \t{str(fitness)}')
 
 
 if __name__ == "__main__":
