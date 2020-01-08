@@ -46,8 +46,7 @@ def main():
 
 
 def print_layout(genotype):
-    for row in genotype:
-        print(row)
+    print(json.dumps(genotype))
 
 
 def mutate_char(char, char_list, rate):
