@@ -12,11 +12,11 @@ MUTATION_COUNT = 500
 MUTATION_RATE = 0.1
 
 LAYOUT_TEMPLATE = [
-  ["§", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ["'"], ["^"], "back"],
-  ["tab", None, None, None, None, None, None, None, None, None, None, [None], ["¨"], "enter"],
-  ["caps", None, None, None, None, None, None, None, None, None, [None], [None], ["$"]],
-  ["Shift", ["<", ">", "\\"], None, None, None, None, None, None, None, [",", ";"], [".", ":"], ["-", "_"], "Shift"],
-  ["Ctrl", "Meta", "Alt", " ", "Alt Gr", "", "Ctrl"]
+    [["§", "°"], ["1", "+", "|"], ["2","\"", "@"], ["3", "*", "#"], ["4", "ç"], ["5", "%"], ["6", "&", "¬"], ["7", "/", "|"], ["8", "(", "¢"], ["9", ")"], ["0", "="], ["'", "?", "´"], ["^", "`", "~"], "Backspace"],
+    ["Tab", None, None, None, None, None, None, None, None, None, None, [None, "è", "["], ["¨", "!", "]"], "Enter"],
+    ["Caps Lock", None, None, None, None, None, None, None, None, None, [None, "é"], [None, "à", "{"], ["$", "£", "}"]],
+    ["Shift", ["<", ">", "\\"], None, None, None, None, None, None, None, [",", ";"], [".", ":"], ["-", "_"], "Shift"],
+    ["Ctrl", "Meta", "Alt", " ", "Alt Gr", "", "", "Ctrl"]
 ]
 
 
