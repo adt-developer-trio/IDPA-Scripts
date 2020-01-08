@@ -29,7 +29,7 @@ def main():
         combinations = data.get('combinations')
 
     for i in range(1, ITERATIONS + 1):
-        fitnesses = evaluate_population(population, frequency)
+        fitnesses = evaluate_population(population, frequency, combinations)
         print(f'Iteration: {i} Highest fitness: {max(fitnesses)}')
         selected = select_genotypes(population, fitnesses, SELECTED_COUNT)
         mutated = mutate(selected, MUTATION_RATE, MUTATION_COUNT)
@@ -99,13 +99,13 @@ def mutate(selected, rate, n):
     return mutated
 
 
-def evaluate_population(population, frequency):
+def evaluate_population(population, frequency, combinations):
     fitnesses = []
     for genotype in population:
         fitness = finger_distance(genotype, frequency)[1]
         fitness += finger_distribution(genotype, frequency)[1]
         fitness += row_distribution(genotype, frequency)[1]
-        fitness += combination_occurrences(genotype, frequency)[1]
+        fitness += combination_occurrences(genotype, combinations)[1]
         fitnesses.append(fitness)
     return fitnesses
 
