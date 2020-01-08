@@ -180,7 +180,7 @@ def combination_occurrences(layout, frequency):
         if summed.get(combination[::-1]):
             key = combination[::-1]
         summed.update({
-            key: frequency.get(key) + frequency.get(combination, 0)})
+            key: frequency.get(key) + frequency.get(key[::-1], 0)})
 
     positive = 0
     negative = 0
