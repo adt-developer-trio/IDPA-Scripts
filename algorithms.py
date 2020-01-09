@@ -1,4 +1,5 @@
 import json
+import click
 
 
 def get_central_keys(layout):
@@ -216,12 +217,15 @@ def combination_occurrences(layout, frequency):
     return (relative, absolute_negative)
 
 
-def main():
+@click.command()
+@click.argument('layout')
+@click.argument('frequencies')
+def main(layout, frequencies):
 
-    with open('./layouts/qwertz.json', 'r', encoding='utf-8') as file:
+    with open(layout, 'r', encoding='utf-8') as file:
         layout = json.load(file)
 
-    with open('./output/en/en.json', 'r', encoding='utf-8') as file:
+    with open(frequencies, 'r', encoding='utf-8') as file:
         data = json.load(file)
         frequency = data.get('single')
         combinations = data.get('combinations')
