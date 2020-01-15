@@ -23,7 +23,7 @@ LAYOUT_TEMPLATE = [
 def main():
     population = generate_population(POPULATION_SIZE)
 
-    with open('output/de/de.json') as file:
+    with open('output/vs/vs.json') as file:
         data = json.load(file)
         frequency = data.get('single')
         combinations = data.get('combinations')
